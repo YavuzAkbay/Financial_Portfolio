@@ -1,0 +1,41 @@
+import yfinance as yf
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+from datetime import datetime
+
+index = yf.Ticker("GD=F") # 
+index_data = index.history(period="max")
+symbols = ["SB=F", "ZL=F", "KC=F", "ZS=F", "ZO=F", "OJ=F"]
+
+data = {}
+for symbol in symbols:
+    stock = yf.Ticker(symbol)
+    stock_data = stock.history(period="max")
+    data[symbol] = stock_data['Close']
+
+portfolio_index = pd.DataFrame(data).mean(axis=1)
+
+end_date = datetime.today().strftime('%Y-%m-%d')
+start_date = "2022-09-26"
+index_comparison = index_data.loc[start_date:end_date]
+portfolio_comparison = portfolio_index.loc[start_date:end_date]
+
+gsci_return = (index_comparison['Close'][-1] - index_comparison['Close'][0])/index_comparison['Close'][0]
+
+portfolio_return = (portfolio_comparison[-1] - portfolio_comparison[0])/portfolio_comparison[0]
+
+print(f"GSCI INDEX: {gsci_return:.2%}")
+print(f"BAYFORD COMMODITY PORTFOLIO: {portfolio_return:.2%}")
+
+index_normalized = index_comparison['Close']/index_comparison['Close'][0]
+portfolio_normalized = portfolio_comparison/portfolio_comparison[0]
+
+plt.style.use('dark_background')
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.plot(index_normalized, label="GSCI INDEX")
+ax.plot(portfolio_normalized, label="BAYFORD COMMODITY PORTFOLIO")
+text = plt.text(0.5, 0.5, 'BAYFORD ANALYTICS', fontsize=40, color='gray', ha='center', va='center', alpha=0.5, transform=ax.transAxes)
+plt.savefig('myfigure.png', dpi=900)
+plt.legend()
+plt.show()

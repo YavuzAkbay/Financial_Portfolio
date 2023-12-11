@@ -1,0 +1,39 @@
+import yfinance as yf
+import pandas as pd
+from datetime import datetime
+import matplotlib.pyplot as plt
+
+symbols = ["SB=F", "ZL=F", "KC=F", "ZS=F", "ZO=F", "OJ=F"]
+weights = [1/6, 1/6, 1/6, 1/6, 1/6, 1/6]
+
+start_date = "2022-09-26"
+end_date = "2023-09-26"
+
+data = yf.download(symbols, start=start_date, end=end_date)['Adj Close']
+
+daily_returns = data.pct_change()
+
+portfolio_returns = daily_returns.dot(weights)
+
+total_return = (portfolio_returns + 1).prod() - 1
+
+print(f"Portfolio Return: {total_return:.2%}")
+
+index = yf.Ticker("GD=F") # 
+index_data = index.history(start=start_date, end=end_date)
+
+index_return = (index_data['Close'][-1] - index_data['Close'][0])/index_data['Close'][0]
+
+print(f"GSCI Index Return: {index_return:.2%}")
+
+# Creating a graph
+portfolio_normalized = (portfolio_returns + 1).cumprod()
+index_normalized = index_data['Close']/index_data['Close'][0]
+
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.plot(index_normalized, label="GSCI INDEX")
+ax.plot(portfolio_normalized, label="BAYFORD COMMODITY PORTFOLIO")
+text = plt.text(0.5, 0.5, 'BAYFORD ANALYTICS', fontsize=40, color='gray', ha='center', va='center', alpha=0.5, transform=ax.transAxes)
+plt.savefig('myfigure.png', dpi=900)
+plt.legend()
+plt.show()
